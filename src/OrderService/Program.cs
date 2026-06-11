@@ -7,6 +7,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<OrderDbContext>(options => options.UseNpgsql(connectionString));
 
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();

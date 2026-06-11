@@ -19,7 +19,7 @@ namespace OrderService.UseCases.Commands
 
         public async Task<bool> Handle(DeleteOrderCommand request, CancellationToken cancellationToken)
         {
-            var order = await _context.Orders.FindAsync(new object[] { request.OrderId, cancellationToken });
+            var order = await _context.Orders.FindAsync(new object[] { request.OrderId }, cancellationToken);
             if (order == null) {
                 return false;
             }

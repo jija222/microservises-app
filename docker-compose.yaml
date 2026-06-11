@@ -1,7 +1,7 @@
 services:
-    postgres:
+    postgres-orders-db:
         image: postgres:16
-        container_name: postgres_db
+        container_name: postgres-orders-db
 
         environment:
             POSTGRES_DB: orders_db
@@ -10,4 +10,14 @@ services:
         ports:
             - "5432:5432"
 
+    postgres-payments-db:
+        image: postgres:16
+        container_name: postgres-payments-db
 
+        environment:
+            POSTGRES_DB: payments_db
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: pass
+        ports:
+            - "5433:5432"
+        

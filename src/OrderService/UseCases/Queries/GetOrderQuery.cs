@@ -28,7 +28,7 @@ namespace OrderService.UseCases.Queries
 
         public async Task<OrderResponсe?> Handle(GetOrderQuery request, CancellationToken cancellationToken)
         {
-            var order = await _context.Orders.FindAsync(new object[] { request.OrderId, cancellationToken });
+            var order = await _context.Orders.FindAsync(new object[] { request.OrderId}, cancellationToken);
             if (order == null)
             {
                 return null;

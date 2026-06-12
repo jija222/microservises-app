@@ -1,3 +1,4 @@
+using Refit;
 using OrderService.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,9 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<OrderDbContext>(options => options.UseNpgsql(connectionString));
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+var paymentUrl = builder.Configuration.GetValue<string>("PaymentServiceUrl");
+builder.Services.AddRefitClient<OrderService.Clients.IPaymentClient>()
+    .ConfigureHttpClient(c => c.BaseAddress = new Uri(paymentUrl));
 
 builder.Services.AddControllers();
 

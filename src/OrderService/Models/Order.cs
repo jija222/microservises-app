@@ -8,6 +8,6 @@ namespace OrderService.Models
         public decimal Price { get; set; }
         public string ClientEmail { get; set; }
         public string PhoneNumber { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

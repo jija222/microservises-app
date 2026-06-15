@@ -20,4 +20,87 @@ services:
             POSTGRES_PASSWORD: pass
         ports:
             - "5433:5432"
-        
+
+    kafka:
+        image: apache/kafka:4.2.0
+
+        container_name: kafka
+
+        ports:
+            - "9092:9092"
+
+        environment:
+            CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+
+            KAFKA_NODE_ID: 1
+
+            KAFKA_PROCESS_ROLES: broker,controller
+
+            KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+
+            KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+
+            KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+            KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+
+            KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+            KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+            KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+    kafka-init:
+        image: apache/kafka:4.2.0 
+        container_name: kafka-init
+        depends_on:
+            - kafka 
+        command: >
+            bash -c "
+            echo 'Ждем 10 секунд, пока Kafka проснется...' &&
+            sleep 10 &&
+            /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic payment_events --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1 &&
+            echo 'Топик payment_events успешно создан'
+            "
+    paymentservice:
+        container_name: paymentservice
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ConnectionStrings__DefaultConnection=Host=postgres-payments-db;Port=5432;Database=payments_db;Username=user;Password=pass
+            - Kafka__BootstrapServers=kafka:9092
+        build:
+            context: ./src/PaymentService
+            dockerfile: Dockerfile
+        ports: 
+            - "5002:8080"
+        depends_on:
+            - postgres-payments-db
+            - kafka
+    orderservice:
+        container_name: orderservice
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ConnectionStrings__DefaultConnection=Host=postgres-orders-db;Port=5432;Database=orders_db;Username=user;Password=pass
+            - PaymentServiceUrl=http://paymentservice:8080
+        build: 
+            context: ./src/OrderService
+            dockerfile: Dockerfile 
+        ports:
+            - "5001:8080"
+        depends_on:
+            - postgres-orders-db
+            - paymentservice
+    notificationservice:
+        container_name: notificationservice
+        build:
+            context: ./src/NotificationService
+            dockerfile: Dockerfile
+        ports: 
+            - "5003:8080"
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - Kafka__BootstrapServers=kafka:9092
+            - Kafka__GroupId=notification-group
+        depends_on:
+            - kafka

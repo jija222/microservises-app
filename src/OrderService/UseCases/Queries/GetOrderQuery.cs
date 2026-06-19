@@ -3,12 +3,12 @@ using OrderService.Data;
 
 namespace OrderService.UseCases.Queries
 {
-    public class GetOrderQuery : IRequest<OrderResponсe?>
+    public class GetOrderQuery : IRequest<OrderResponse?>
     {
         public long OrderId { get; set; }
     }
 
-    public class OrderResponсe
+    public class OrderResponse
     {
         public int ProductId { get; set; }
         public int Quantity { get; set; }
@@ -17,7 +17,7 @@ namespace OrderService.UseCases.Queries
         public string PhoneNumber { get; set; }
     }
 
-    public class  GetOrderQueryHandler : IRequestHandler<GetOrderQuery, OrderResponсe?>
+    public class  GetOrderQueryHandler : IRequestHandler<GetOrderQuery, OrderResponse?>
     {
         private readonly OrderDbContext _context;
 
@@ -26,14 +26,14 @@ namespace OrderService.UseCases.Queries
             _context = context;
         }
 
-        public async Task<OrderResponсe?> Handle(GetOrderQuery request, CancellationToken cancellationToken)
+        public async Task<OrderResponse?> Handle(GetOrderQuery request, CancellationToken cancellationToken)
         {
             var order = await _context.Orders.FindAsync(new object[] { request.OrderId}, cancellationToken);
             if (order == null)
             {
                 return null;
             }
-            return new OrderResponсe
+            return new OrderResponse
             {
                 ProductId = order.ProductId,
                 Quantity = order.Quantity,

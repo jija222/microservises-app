@@ -28,7 +28,6 @@ services:
 
         ports:
             - "9092:9092"
-
         environment:
             CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
 
@@ -63,6 +62,19 @@ services:
             /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic payment_events --bootstrap-server kafka:9092 --partitions 1 --replication-factor 1 &&
             echo 'Топик payment_events успешно создан'
             "
+    notificationservice:
+        container_name: notificationservice
+        build:
+            context: ./src/NotificationService
+            dockerfile: Dockerfile
+        ports: 
+            - "5003:8080"
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - Kafka__BootstrapServers=kafka:9092
+            - Kafka__GroupId=notification-group
+        depends_on:
+            - kafka
     paymentservice:
         container_name: paymentservice
         environment:
@@ -91,16 +103,4 @@ services:
         depends_on:
             - postgres-orders-db
             - paymentservice
-    notificationservice:
-        container_name: notificationservice
-        build:
-            context: ./src/NotificationService
-            dockerfile: Dockerfile
-        ports: 
-            - "5003:8080"
-        environment:
-            - ASPNETCORE_ENVIRONMENT=Development
-            - Kafka__BootstrapServers=kafka:9092
-            - Kafka__GroupId=notification-group
-        depends_on:
-            - kafka
+    

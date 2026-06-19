@@ -13,7 +13,7 @@ namespace OrderService.Controllers
     {
         private readonly IMediator _mediator;
 
-        public OrdersController(OrderDbContext context, IMediator mediator)
+        public OrdersController(IMediator mediator)
         {
             _mediator = mediator;
         }

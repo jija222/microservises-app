@@ -1,13 +1,16 @@
 namespace OrderService.Models
 {
-    public class  Order 
+    public class Order
     {
-        public long Id { get; set; }
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
-        public decimal Price { get; set; }
-        public string ClientEmail { get; set; }
-        public string PhoneNumber { get; set; }
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public long Id { get; set; } // Первичный ключ
+        public int Quantity { get; set; } // Количество товара в заказе
+        public DateTime CreatedDate { get; set; } // Дата создания заказа
+
+        // Внешние ключи (Связи с другими таблицами)
+        public long ClientId { get; set; }
+        public Client Client { get; set; }
+
+        public long ProductId { get; set; }
+        public Product Product { get; set; }
     }
 }

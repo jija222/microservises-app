@@ -31,6 +31,15 @@ namespace OrderService.Data
             // Настройка ограничений
             modelBuilder.Entity<Client>().Property(c => c.Email).IsRequired().HasMaxLength(100);
             modelBuilder.Entity<Product>().Property(p => p.Price).HasColumnType("numeric(18,2)");
+
+            modelBuilder.Entity<Product>().HasData(
+                new Product { Id = 1, Price = 500m },
+                new Product { Id = 2, Price = 1500m },
+                new Product { Id = 3, Price = 99.99m }
+            );
+            modelBuilder.Entity<Client>().HasData(new Client { Id = 1, Email = "test@mail.ru", PhoneNumber = "+79990000000" }
+);
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

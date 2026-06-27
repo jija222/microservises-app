@@ -43,6 +43,14 @@ namespace OrderService.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Clients", "orders");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Email = "test@mail.ru",
+                            PhoneNumber = "+79990000000"
+                        });
                 });
 
             modelBuilder.Entity("OrderService.Models.Order", b =>
@@ -88,6 +96,23 @@ namespace OrderService.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products", "orders");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            Price = 500m
+                        },
+                        new
+                        {
+                            Id = 2L,
+                            Price = 1500m
+                        },
+                        new
+                        {
+                            Id = 3L,
+                            Price = 99.99m
+                        });
                 });
 
             modelBuilder.Entity("OrderService.Models.Order", b =>

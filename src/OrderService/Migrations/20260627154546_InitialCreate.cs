@@ -4,6 +4,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace OrderService.Migrations
 {
     /// <inheritdoc />
@@ -73,6 +75,23 @@ namespace OrderService.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                schema: "orders",
+                table: "Clients",
+                columns: new[] { "Id", "Email", "PhoneNumber" },
+                values: new object[] { 1L, "test@mail.ru", "+79990000000" });
+
+            migrationBuilder.InsertData(
+                schema: "orders",
+                table: "Products",
+                columns: new[] { "Id", "Price" },
+                values: new object[,]
+                {
+                    { 1L, 500m },
+                    { 2L, 1500m },
+                    { 3L, 99.99m }
                 });
 
             migrationBuilder.CreateIndex(

@@ -82,7 +82,7 @@ services:
         container_name: orderservice
         environment:
             - ASPNETCORE_ENVIRONMENT=Development
-            - ConnectionStrings__DefaultConnection=Host=postgres-orders-db;Port=5432;Database=microservices_db;Username=user;Password=pass
+            - ConnectionStrings__DefaultConnection=Host=postgres-db;Port=5432;Database=microservices_db;Username=user;Password=pass
             - PaymentServiceUrl=http://paymentservice:8080
         build: 
             context: ./src/OrderService

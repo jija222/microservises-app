@@ -10,9 +10,8 @@ namespace OrderService.UseCases.Commands
     {
         public int ProductId { get; set; } //Внешний ключ на продукт, который в заказе
         public int Quantity { get; set; } // Количество продукта в заказе
-        public string ClientEmail { get; set; } // Email клиента, который сделал заказ
-        public decimal Price { get; set; } // Цена продукта в заказе
-        public string PhoneNumber { get; set; } // Номер телефона клиента, который сделал заказ
+
+        public long ClientId { get; set; } // Id клиента, который делает заказ
     }
 
     public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, long>
@@ -31,21 +30,24 @@ namespace OrderService.UseCases.Commands
         }
         public async Task<long> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"Начало создания заказа для email {request.ClientEmail}");
-            var newOrder = _mapper.Map<Order>(request); // Добавляем маппинг с помощью AutoMapper
+            _logger.LogInformation($"Начало создания заказа для клиента с Id {request.ClientId}");
+
+            var newOrder = _mapper.Map<Order>(request);
+            newOrder.CreatedDate = DateTime.UtcNow;
 
             _context.Orders.Add(newOrder);
-
             await _context.SaveChangesAsync(cancellationToken);
-            var product = await _context.Products
-              .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken);
-            _logger.LogInformation($"Заказ с id {newOrder.Id} успешно создан для email {request.ClientEmail}");
+
+
+            var productPrice = await _context.Products
+                .Where(p => p.Id == request.ProductId)
+                .Select(p => p.Price) 
+                .FirstAsync(cancellationToken); // FirstAsync выбросит ошибку, если не найдет, но Валидатор гарантирует, что найдет
 
             await _mediator.Publish(new OrderCreatedNotification
             {
                 OrderId = newOrder.Id,
-
-               Price = product?.Price ?? 0m
+                Price = productPrice 
             }, cancellationToken);
 
             return newOrder.Id;

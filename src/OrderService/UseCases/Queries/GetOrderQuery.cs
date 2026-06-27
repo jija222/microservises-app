@@ -13,11 +13,10 @@ namespace OrderService.UseCases.Queries
 
     public class OrderResponse
     {
-        public int ProductId { get; set; }
+        public long OrderId { get; set; }
+        public long ProductId { get; set; }
         public int Quantity { get; set; }
-        public string ClientEmail { get; set; }
-        public decimal Price { get; set; }
-        public string PhoneNumber { get; set; }
+        public long ClientId { get; set; }
     }
 
     public class  GetOrderQueryHandler : IRequestHandler<GetOrderQuery, OrderResponse?>

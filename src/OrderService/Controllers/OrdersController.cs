@@ -1,10 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using OrderService.Data;
-using OrderService.Models;
 using MediatR;
 using OrderService.UseCases.Commands;
 using OrderService.UseCases.Queries;
-
+//Рефкторинг сделан, добавлена валидация для команд и запросов
 namespace OrderService.Controllers
 {
     [ApiController]
@@ -20,19 +18,29 @@ namespace OrderService.Controllers
 
         [HttpPost("create")]
         public async Task<IActionResult> CreateOrder([FromBody] CreateOrderCommand command)
-        { 
+        {
+            var validator = new CreateOrderCommandValidator();
+            var validationResult = validator.Validate(command);
+            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
             var orderId = await _mediator.Send(command);
-            return Ok(new { OrderId = orderId });
+
+            return Ok(orderId);
         }
 
         [HttpGet("{order_id}")]
         public async Task<IActionResult> GetOrder(long order_id)
         {
             var query = new GetOrderQuery { OrderId = order_id };
+
+            var validator = new GetOrderQueryValidator();
+            var validationResult = validator.Validate(query);
+            if (!validationResult.IsValid) return BadRequest(validationResult.Errors);
+
             var result = await _mediator.Send(query);
             if(result == null)
             {
-                return NotFound(new { Message = $"Заказ с Id {order_id} не найден" });
+                return NotFound(new { Message = $"Заказ с Id {order_id} не найден" }); // глянуть надо ли возвращать сообщение об ошибке
             }
             return Ok(result);
         }
@@ -41,12 +49,21 @@ namespace OrderService.Controllers
         public async Task<IActionResult> DeleteOrder(long order_id)
         {
             var command = new DeleteOrderCommand { OrderId = order_id };
+
+            var validator = new DeleteOrderCommandValidator();
+            var validationResult = validator.Validate(command);
+            if (!validationResult.IsValid)
+            {
+                return BadRequest(validationResult.Errors); 
+            }
+
             var isDeleted = await _mediator.Send(command);
             if(!isDeleted)
             {
-                return NotFound(new { Message = $"Заказ с Id {order_id} не удален" });
+                return NotFound(new { Message = $"Заказ с Id {order_id} не удален" }); // это тоже глянуть надо
+
             }
-            return Ok(new { Message = $"Заказ с Id {order_id} успешно удален" });
+            return Ok(new { Message = $"Заказ с Id {order_id} успешно удален" }); // посмотри надо ли возвращать сообщение об успешном удалении
         }
     }
 }

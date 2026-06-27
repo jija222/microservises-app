@@ -1,25 +1,14 @@
 services:
-    postgres-orders-db:
+    postgres-db:
         image: postgres:16
-        container_name: postgres-orders-db
+        container_name: postgres-db
 
         environment:
-            POSTGRES_DB: orders_db
+            POSTGRES_DB: microservices_db
             POSTGRES_USER: user
             POSTGRES_PASSWORD: pass
         ports:
             - "5432:5432"
-
-    postgres-payments-db:
-        image: postgres:16
-        container_name: postgres-payments-db
-
-        environment:
-            POSTGRES_DB: payments_db
-            POSTGRES_USER: user
-            POSTGRES_PASSWORD: pass
-        ports:
-            - "5433:5432"
 
     kafka:
         image: apache/kafka:4.2.0
@@ -79,7 +68,7 @@ services:
         container_name: paymentservice
         environment:
             - ASPNETCORE_ENVIRONMENT=Development
-            - ConnectionStrings__DefaultConnection=Host=postgres-payments-db;Port=5432;Database=payments_db;Username=user;Password=pass
+            - ConnectionStrings__DefaultConnection=Host=postgres-db;Port=5432;Database=microservices_db;Username=user;Password=pass
             - Kafka__BootstrapServers=kafka:9092
         build:
             context: ./src/PaymentService
@@ -87,13 +76,13 @@ services:
         ports: 
             - "5002:8080"
         depends_on:
-            - postgres-payments-db
+            - postgres-db
             - kafka
     orderservice:
         container_name: orderservice
         environment:
             - ASPNETCORE_ENVIRONMENT=Development
-            - ConnectionStrings__DefaultConnection=Host=postgres-orders-db;Port=5432;Database=orders_db;Username=user;Password=pass
+            - ConnectionStrings__DefaultConnection=Host=postgres-orders-db;Port=5432;Database=microservices_db;Username=user;Password=pass
             - PaymentServiceUrl=http://paymentservice:8080
         build: 
             context: ./src/OrderService
@@ -101,6 +90,6 @@ services:
         ports:
             - "5001:8080"
         depends_on:
-            - postgres-orders-db
+            - postgres-db
             - paymentservice
     

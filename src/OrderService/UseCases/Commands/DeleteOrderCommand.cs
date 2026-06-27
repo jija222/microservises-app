@@ -1,5 +1,5 @@
-﻿using System;
-using MediatR;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using OrderService.Data;
 namespace OrderService.UseCases.Commands
 {
@@ -19,13 +19,14 @@ namespace OrderService.UseCases.Commands
 
         public async Task<bool> Handle(DeleteOrderCommand request, CancellationToken cancellationToken)
         {
-            var order = await _context.Orders.FindAsync(new object[] { request.OrderId }, cancellationToken);
+            var order = await _context.Orders.FirstOrDefaultAsync(x => x.Id == request.OrderId, cancellationToken);
             if (order == null) {
-                return false;
+                return false; // Если вернем false, то это будет означать, что заказ не найден и удаление не произошло
+                //Будет выведено "Заказ с Id {order_id} не удален"
             }
             _context.Orders.Remove(order);
             await _context.SaveChangesAsync(cancellationToken);
-            return true;
+            return true; // Если вернем true, то это будет означать, что заказ успешно удален
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using Confluent.Kafka;
 using System.Text.Json;
-using Microsoft.Extensions.Logging;
+
 
 namespace PaymentService.Services
 {

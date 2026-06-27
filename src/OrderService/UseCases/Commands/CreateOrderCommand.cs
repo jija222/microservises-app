@@ -1,61 +1,52 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using OrderService.Data;
+using OrderService.Events;
 using OrderService.Models;
-using OrderService.Clients;
-using Microsoft.Extensions.Logging;
 namespace OrderService.UseCases.Commands
 {
     public class CreateOrderCommand : IRequest<long>
     {
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
-        public string ClientEmail { get; set; }
-        public decimal Price { get; set; }
-        public string PhoneNumber { get; set; }
+        public int ProductId { get; set; } //Внешний ключ на продукт, который в заказе
+        public int Quantity { get; set; } // Количество продукта в заказе
+        public string ClientEmail { get; set; } // Email клиента, который сделал заказ
+        public decimal Price { get; set; } // Цена продукта в заказе
+        public string PhoneNumber { get; set; } // Номер телефона клиента, который сделал заказ
     }
 
     public class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, long>
     {
         private readonly OrderDbContext _context;
-        private readonly IPaymentClient _paymentClient;
         private readonly ILogger _logger;
-        public CreateOrderCommandHandler(OrderDbContext context, IPaymentClient paymentClient, 
-            ILogger<CreateOrderCommandHandler> logger)
+        private readonly IMediator _mediator;
+        private readonly IMapper _mapper;
+        public CreateOrderCommandHandler(OrderDbContext context,
+            ILogger<CreateOrderCommandHandler> logger, IMediator mediator, IMapper mapper)
         {
             _context = context;
-            _paymentClient = paymentClient;
             _logger = logger;
+            _mediator = mediator;
+            _mapper = mapper;
         }
         public async Task<long> Handle(CreateOrderCommand request, CancellationToken cancellationToken)
         {
             _logger.LogInformation($"Начало создания заказа для email {request.ClientEmail}");
-            var newOrder = new Order
-            {
-                ProductId = request.ProductId,
-                Quantity = request.Quantity,
-                ClientEmail = request.ClientEmail,
-                Price = request.Price,
-                PhoneNumber = request.PhoneNumber
-            };
+            var newOrder = _mapper.Map<Order>(request); // Добавляем маппинг с помощью AutoMapper
+
             _context.Orders.Add(newOrder);
 
             await _context.SaveChangesAsync(cancellationToken);
+            var product = await _context.Products
+              .FirstOrDefaultAsync(p => p.Id == request.ProductId, cancellationToken);
             _logger.LogInformation($"Заказ с id {newOrder.Id} успешно создан для email {request.ClientEmail}");
-            try
-            {
-                var paymentRequest = new PaymentCreateRequest
-                {
-                    OrderId = newOrder.Id,
-                    Price = newOrder.Price,
-                };
-                await _paymentClient.CreatePaymentAsync(paymentRequest);
-                _logger.LogInformation($"Оплата для заказа {newOrder.Id} успешно создана");
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex, $"Ошибка при создании оплаты для заказа {newOrder.Id}");
-            }
 
+            await _mediator.Publish(new OrderCreatedNotification
+            {
+                OrderId = newOrder.Id,
+
+               Price = product?.Price ?? 0m
+            }, cancellationToken);
 
             return newOrder.Id;
         }

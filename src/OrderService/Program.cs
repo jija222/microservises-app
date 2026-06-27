@@ -1,6 +1,8 @@
-using Refit;
-using OrderService.Data;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using OrderService.Data;
+using OrderService.Mappings;
+using Refit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,8 @@ builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Progr
 var paymentUrl = builder.Configuration.GetValue<string>("PaymentServiceUrl");
 builder.Services.AddRefitClient<OrderService.Clients.IPaymentClient>()
     .ConfigureHttpClient(c => c.BaseAddress = new Uri(paymentUrl));
+
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
 builder.Services.AddControllers();
 

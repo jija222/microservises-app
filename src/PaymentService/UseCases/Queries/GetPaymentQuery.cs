@@ -1,6 +1,7 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using PaymentService.Data;
-
 namespace PaymentService.UseCases.Queries
 {
     public class GetPaymentQuery : IRequest<PaymentResponse?>
@@ -18,23 +19,22 @@ namespace PaymentService.UseCases.Queries
     public class GetPaymentQueryHandler : IRequestHandler<GetPaymentQuery, PaymentResponse?>
     {
         private readonly PaymentDbContext _context;
+        private readonly IMapper _mapper;
 
-        public GetPaymentQueryHandler(PaymentDbContext context)
+        public GetPaymentQueryHandler(PaymentDbContext context, IMapper mapper)
         {
             _context = context;
+            _mapper = mapper;
         }
 
         public async Task<PaymentResponse?> Handle(GetPaymentQuery request, CancellationToken cancellationToken)
         {
-            var payment = await _context.Payments.FindAsync(new object[] { request.PaymentId }, cancellationToken);
+            var payment = await _context.Payments
+                .FirstOrDefaultAsync(p => p.Id == request.PaymentId, cancellationToken);
+
             if (payment == null) return null;
 
-            return new PaymentResponse
-            {
-                Price = payment.Price,
-                Status = payment.Status,
-                DateCreate = payment.CreatedAt
-            };
+            return _mapper.Map<PaymentResponse>(payment);
         }
     }
 }

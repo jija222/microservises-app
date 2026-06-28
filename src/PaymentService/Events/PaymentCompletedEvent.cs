@@ -1,6 +1,12 @@
-﻿namespace PaymentService.Events
+﻿using MediatR;
+
+namespace PaymentService.Events
 {
-    public class PaymentCompletedEvent
+    /// <summary>
+    /// Событие для Kafka. Отвечает за передачу данных в другие микросервисы (например, NotificationService).
+    /// Не объединяется с моделью БД для независимого развития: формат сообщений (контракт) может меняться отдельно от структуры таблиц.
+    /// </summary>
+    public class PaymentCompletedEvent : INotification
     {
         public long PaymentId { get; set; }
         public long OrderId { get; set; }

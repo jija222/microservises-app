@@ -13,10 +13,11 @@ namespace OrderService.UseCases.Queries
 
     public class OrderResponse
     {
-        public long OrderId { get; set; }
         public long ProductId { get; set; }
-        public int Quantity { get; set; }
-        public long ClientId { get; set; }
+        public int Amount { get; set; }          // В БД Quantity
+        public string EmailClient { get; set; }  // В БД Email
+        public decimal Price { get; set; }       // Берем из таблицы Product
+        public string PhoneNumber { get; set; }  // Берем из таблицы Client
     }
 
     public class  GetOrderQueryHandler : IRequestHandler<GetOrderQuery, OrderResponse?>
@@ -32,7 +33,11 @@ namespace OrderService.UseCases.Queries
 
         public async Task<OrderResponse?> Handle(GetOrderQuery request, CancellationToken cancellationToken)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(x => x.Id == request.OrderId, cancellationToken);
+            var order = await _context.Orders
+                .Include(o => o.Client)  // Подтягиваем данные клиента (для Email и Телефона)
+                .Include(o => o.Product) // Подтягиваем данные продукта (для Цены)
+                .FirstOrDefaultAsync(x => x.Id == request.OrderId, cancellationToken);
+
             if (order == null)
             {
                 return null;

@@ -9,7 +9,7 @@ namespace OrderService.UseCases.Commands
     public class CreateOrderCommand : IRequest<long>
     {
         public int ProductId { get; set; } //Внешний ключ на продукт, который в заказе
-        public int Quantity { get; set; } // Количество продукта в заказе
+        public int Quantity { get; set; }  // Количество продукта в заказе
 
         public long ClientId { get; set; } // Id клиента, который делает заказ
     }
@@ -33,7 +33,7 @@ namespace OrderService.UseCases.Commands
             _logger.LogInformation($"Начало создания заказа для клиента с Id {request.ClientId}");
 
             var newOrder = _mapper.Map<Order>(request);
-            newOrder.CreatedDate = DateTime.UtcNow;
+            //newOrder.CreatedDate = DateTime.UtcNow;
 
             _context.Orders.Add(newOrder);
             await _context.SaveChangesAsync(cancellationToken);

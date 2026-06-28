@@ -4,7 +4,7 @@ namespace OrderService.Models
     {
         public long Id { get; set; } // Первичный ключ
         public int Quantity { get; set; } // Количество товара в заказе
-        public DateTime CreatedDate { get; set; } // Дата создания заказа
+        public DateTime CreatedDate { get; set; }  = DateTime.UtcNow; // Дата создания заказа
 
         // Внешние ключи (Связи с другими таблицами)
         public long ClientId { get; set; }

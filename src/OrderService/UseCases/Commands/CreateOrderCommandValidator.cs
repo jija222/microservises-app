@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using OrderService.Data;
-using OrderService.UseCases.Commands;
 
 namespace OrderService.UseCases.Commands
 {
